@@ -1,0 +1,13 @@
+[Unit]
+After=network.target
+Description=Telegram bot service
+
+[Service]
+Type=simple
+User=kirill
+WorkingDirectory=/project/directory/route
+ExecStart=/bin/bash -c "source /route/for/evn/activate && python3 /route/for/file.py"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
