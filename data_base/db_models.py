@@ -65,9 +65,6 @@ def get_user_list(**kwargs) -> List[User]:
 
 
 def clear_users():
-    # users_list = get_user_list()
-    # for user in users_list:
-    #     user.delete()
     with DBSession() as session:
         try:
             session.execute(delete(User))

@@ -28,6 +28,8 @@ def command_start(message: Message, bot: TeleBot):
 def pick_winner_button_handler(message: Message, bot: TeleBot):
     # Берём список активных пользователей
     users_list = get_user_list(active=True)
+    if not users_list:
+        bot.send_message(message.chat.id, MessageTexts.NO_ACTIVE_USERS, reply_markup=admin_markup())
     # выбираем случайного победителя
     winner = users_list[random.randrange(len(users_list))]
     # отправляем сообщение админу с информацией об участнике
