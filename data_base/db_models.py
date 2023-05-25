@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy import func
 from sqlalchemy import Integer, String, ForeignKey, \
     Float, UniqueConstraint, BigInteger, Boolean, DateTime
@@ -32,19 +32,20 @@ class User(Base, IDUMixin):
 
     def __init__(self, *args, **kwargs):
         """
-
-        :param kwargs: name / phone / email / telegram_id / enroll_date (optional)
-
+        :param name / telegram_id / enroll_date & active (optional) as kwargs
         """
         super().__init__()
         for key, val in kwargs.items():
             self.__setattr__(key, val)
 
-    def __str__(self, admin: bool = False):
-        return f"*Пользователь*: {self.name} \n" \
-               f"*Дата регистрации*: {self.enroll_date}\n" \
-               f"*Telegram_ID:* `{self.telegram_id}`" \
+    def __str__(self):
+        return f"*Пользователь*: {self.name}\n" \
+               f"*Telegram_ID:* `{self.telegram_id}`\n" \
                f"*Active:* {self.active}"
+
+    def __repr__(self):
+        return f"User (id: {self.id}, name: {self.name}, telegram_id: {self.telegram_id}, " \
+               f"enroll_date: {self.enroll_date}, active: {self.active})"
 
 
 def get_user_list(**kwargs) -> List[User]:
@@ -61,6 +62,19 @@ def get_user_list(**kwargs) -> List[User]:
         for row in cursor:
             res.append(row[0])
     return res
+
+
+def clear_users():
+    # users_list = get_user_list()
+    # for user in users_list:
+    #     user.delete()
+    with DBSession() as session:
+        try:
+            session.execute(delete(User))
+            session.commit()
+        except Exception as e:
+            logger.error(e)
+            session.rollback()
 
 
 if __name__ == '__main__':

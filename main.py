@@ -24,9 +24,11 @@ register_middleware_handlers(bot)
 
 from handlers import register_handlers
 import data_base
+from filters import register_filters
 
 if __name__ == '__main__':
     logger.log(LOG_LEVEL, "Bot started")
     bot.delete_my_commands()
+    register_filters(bot)
     register_handlers(bot)
     bot.infinity_polling()

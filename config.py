@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 
 
-LOG_LEVEL = logging.DEBUG
+LOG_LEVEL = logging.INFO
 
 # initiate StateStorage and bot
 BASE_DIR = Path(__file__).parent.resolve()
