@@ -33,6 +33,7 @@ def pick_winner_button_handler(message: Message, bot: TeleBot):
     users_list = get_user_list(active=True)
     if not users_list:
         bot.send_message(message.chat.id, MessageTexts.NO_ACTIVE_USERS, reply_markup=admin_markup())
+        return
     # выбираем случайного победителя
     winner = users_list[random.randrange(len(users_list))]
     # отправляем сообщение админу с информацией об участнике
@@ -41,7 +42,7 @@ def pick_winner_button_handler(message: Message, bot: TeleBot):
     if winner.name[:8] != "TestUser": # если не тестовый
         logger.info(f"Отправляю сообщение пользователю {winner.__repr__()}")
         try:
-            bot.send_message(winner.telegram_id, MessageTexts.WINNER_INFO.format(winner))
+            bot.send_message(winner.telegram_id, MessageTexts.WINNER_MESSAGE)
         except ApiTelegramException as e:
             if e.description == "Forbidden: bot was blocked by the user":
                 logger.error(f"User {winner} has blocked the bot. Cannot send message.")
@@ -55,7 +56,7 @@ def pick_winner_button_handler(message: Message, bot: TeleBot):
 
 
 def clear_event_button_handler(message: Message, bot: TeleBot):
-    logger.info(f"Завершаем событие, очищаем список пользвателей")
+    logger.info(f"Администратор {message.from_user.id} завершил событие, очищаем список пользвателей")
     clear_users()
     logger.info(f"Cписок пользвателей очищен")
     bot.send_message(message.chat.id, MessageTexts.CLEAR_USERS_MESSAGE,

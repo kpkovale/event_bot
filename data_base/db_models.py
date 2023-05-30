@@ -41,7 +41,7 @@ class User(Base, IDUMixin):
     def __str__(self):
         return f"*Пользователь*: [{self.name}](tg://user?id={self.telegram_id})\n" \
                f"*Telegram_ID:* `{self.telegram_id}`\n" \
-               f"*Active:* {self.active}"
+               f"*Может участвовать:* {self.active}"
 
     def __repr__(self):
         return f"User (id: {self.id}, name: {self.name}, telegram_id: {self.telegram_id}, " \
