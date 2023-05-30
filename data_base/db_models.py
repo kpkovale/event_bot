@@ -39,7 +39,7 @@ class User(Base, IDUMixin):
             self.__setattr__(key, val)
 
     def __str__(self):
-        return f"*Пользователь*: {self.name}\n" \
+        return f"*Пользователь*: [{self.name}](tg://user?id={self.telegram_id})\n" \
                f"*Telegram_ID:* `{self.telegram_id}`\n" \
                f"*Active:* {self.active}"
 

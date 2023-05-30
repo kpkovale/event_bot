@@ -8,21 +8,24 @@ from keyboards.admin_keyboard import admin_markup
 from telebot.apihelper import ApiTelegramException
 import random
 from utils.bot_logger import logger
+from telebot.util import user_link
 
 
 def command_start(message: Message, bot: TeleBot):
-    if not Admin.is_admin(message.from_user.id) and not User.get(telegram_id=message.from_user.id):
-        new_user = User(name=message.from_user.full_name, telegram_id=message.from_user.id)
-        new_user.insert()
-        logger.info(f"Новый пользователь присоединился к боту: {new_user.__str__()}")
-    user = User.get(telegram_id=message.from_user.id)
-    if user:
-        bot.send_message(message.chat.id, MessageTexts.START_MESSAGE.format(user.id))
-    else:
+    if Admin.is_admin(message.from_user.id):
         logger.info(f"Администратор присоединился к боту: {message.from_user.id} "
                     f"| {message.from_user.full_name}")
         bot.send_message(message.chat.id, MessageTexts.ADMIN_START_MESSAGE,
                          reply_markup=admin_markup())
+    elif not User.get(telegram_id=message.from_user.id):
+        new_user = User(name=message.from_user.full_name, telegram_id=message.from_user.id)
+        new_user.insert()
+        user = User.get(telegram_id=message.from_user.id)
+        logger.info(f"Новый пользователь присоединился к боту: {user.__str__()}")
+        bot.send_message(message.chat.id, MessageTexts.START_MESSAGE.format(user.id))
+    else:
+        user = User.get(telegram_id=message.from_user.id)
+        bot.send_message(message.chat.id, MessageTexts.ALREADY_ENROLLED.format(user.id))
 
 
 def pick_winner_button_handler(message: Message, bot: TeleBot):
@@ -63,11 +66,11 @@ def user_stats_button_handler(message: Message, bot: TeleBot):
     users_list = get_user_list()
     if users_list:
         logger.info(f"Вывожу список пользователей в чат админу {message.from_user.full_name}")
+        logger.info(f"Количество пользователей: {len(users_list)}")
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(len(users_list)))
         text = ""
         for user in users_list:
             text += user.__str__()+"\n"
-        logger.info(text)
         bot.send_message(message.chat.id, text, reply_markup=admin_markup())
     else:
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(0),
