@@ -39,7 +39,7 @@ def pick_winner_button_handler(message: Message, bot: TeleBot):
     # отправляем сообщение админу с информацией об участнике
     bot.send_message(message.chat.id, MessageTexts.WINNER_INFO.format(winner))
     # отправляем сообщение победителю
-    if winner.name[:8] != "TestUser": # если не тестовый
+    if winner.name[:8] != "TestUser":  # если не тестовый
         logger.info(f"Отправляю сообщение пользователю {winner.__repr__()}")
         try:
             bot.send_message(winner.telegram_id, MessageTexts.WINNER_MESSAGE)
@@ -71,7 +71,7 @@ def user_stats_button_handler(message: Message, bot: TeleBot):
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(len(users_list)))
         text = ""
         for user in users_list:
-            text += user.__str__()+"\n"
+            text += user.__str__() + "\n"
         bot.send_message(message.chat.id, text, reply_markup=admin_markup())
     else:
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(0),
@@ -87,8 +87,8 @@ def gen_test_users_command_handler(message: Message, bot: TeleBot):
     if args[1].isdigit():
         bot.send_chat_action(message.chat.id, "typing")
         logger.info(f"Генерируем пользователей в количестве: {args[1]}")
-        for i in range(1, int(args[1])+1):
-            new_user = User(name=f"TestUser{i}", telegram_id=int(random.random()*1000000))
+        for i in range(1, int(args[1]) + 1):
+            new_user = User(name=f"TestUser{i}", telegram_id=int(random.random() * 1000000))
             new_user.insert()
         bot.send_message(message.chat.id, f"{args[1]} пользователей сгенерировано.",
                          reply_markup=admin_markup())
@@ -96,6 +96,18 @@ def gen_test_users_command_handler(message: Message, bot: TeleBot):
 
 def any_text_admin_message_handler(message: Message, bot: TeleBot):
     logger.info(message.text)
+
+
+def user_content_fwd_handler(message: Message, bot: TeleBot):
+    for admin in Admin.ADMINS:
+        try:
+            bot.forward_message(admin, message.chat.id, message.id)
+        except ApiTelegramException as e:
+            if e.description == "Bad Request: chat not found":
+                logger.error(f"admin {admin} has not initiated chat with bot. Cannot forward message")
+            else:
+                logger.error(e)
+
 
 
 def register_core_handlers(bot: TeleBot):
@@ -110,3 +122,7 @@ def register_core_handlers(bot: TeleBot):
                                  admin=True)
     bot.register_message_handler(any_text_admin_message_handler, content_types=['text'],
                                  admin=True, pass_bot=True)
+    bot.register_message_handler(user_content_fwd_handler, content_types=['text', 'photo', 'audio',
+                                                                          'voice', 'contact', 'location',
+                                                                          'video'],
+                                 admin=False, pass_bot=True)

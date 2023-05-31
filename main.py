@@ -31,4 +31,4 @@ if __name__ == '__main__':
     bot.delete_my_commands()
     register_filters(bot)
     register_handlers(bot)
-    bot.infinity_polling()
+    bot.infinity_polling(skip_pending=True)
