@@ -124,5 +124,5 @@ def register_core_handlers(bot: TeleBot):
                                  admin=True, pass_bot=True)
     bot.register_message_handler(user_content_fwd_handler, content_types=['text', 'photo', 'audio',
                                                                           'voice', 'contact', 'location',
-                                                                          'video'],
+                                                                          'video', 'document'],
                                  admin=False, pass_bot=True)
