@@ -133,6 +133,7 @@ dmypy.json
 
 # log files
 logs/*.log
+!logs/
 
 #sqlite databases
 *.db
