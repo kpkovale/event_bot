@@ -4,6 +4,7 @@ from pathlib import Path
 from telebot import TeleBot
 from config import *
 from utils.bot_logger import logger
+from telebot.types import BotCommand
 
 from telebot import apihelper
 apihelper.ENABLE_MIDDLEWARE = True
@@ -29,6 +30,7 @@ from filters import register_filters
 if __name__ == '__main__':
     logger.log(LOG_LEVEL, "Bot started")
     bot.delete_my_commands()
+    bot.set_my_commands([BotCommand("start", "Принять участие в мероприятии")])
     register_filters(bot)
     register_handlers(bot)
     bot.infinity_polling(skip_pending=True)
