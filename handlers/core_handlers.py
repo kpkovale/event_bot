@@ -94,10 +94,6 @@ def gen_test_users_command_handler(message: Message, bot: TeleBot):
                          reply_markup=admin_markup())
 
 
-def any_text_admin_message_handler(message: Message, bot: TeleBot):
-    logger.info(message.text)
-
-
 def user_content_fwd_handler(message: Message, bot: TeleBot):
     for admin in Admin.ADMINS:
         try:
@@ -108,6 +104,30 @@ def user_content_fwd_handler(message: Message, bot: TeleBot):
             else:
                 logger.error(e)
 
+
+def forward_content_to_users_handler(message: Message, bot: TeleBot):
+    user_list = get_user_list()
+    if not user_list:
+        bot.send_message(message.chat.id, MessageTexts.USER_LIST_EMPTY)
+        return
+    if message.content_type == 'text':
+        send_by_function(bot.send_message, user_list, message.text)
+    elif message.content_type == 'photo':
+        send_by_function(bot.send_photo, user_list, message.photo[0].file_id)
+    elif message.content_type == 'document':
+        send_by_function(bot.send_document, user_list, message.document.file_id)
+
+
+def send_by_function(method, user_list, value):
+    logger.info(value)
+    for user in user_list:
+        try:
+            method(user.telegram_id, value)
+        except ApiTelegramException as e:
+            if e.description == "Forbidden: bot was blocked by the user":
+                logger.error(f"User {user.telegram_id} has blocked the bot. Cannot send entity.")
+            else:
+                logger.error(e)
 
 
 def register_core_handlers(bot: TeleBot):
@@ -120,7 +140,8 @@ def register_core_handlers(bot: TeleBot):
                                  admin=True)
     bot.register_message_handler(user_stats_button_handler, is_button=[ButtonNames.USER_STATS], pass_bot=True,
                                  admin=True)
-    bot.register_message_handler(any_text_admin_message_handler, content_types=['text'],
+    bot.register_message_handler(forward_content_to_users_handler,
+                                 content_types=['text', 'photo', 'document'],
                                  admin=True, pass_bot=True)
     bot.register_message_handler(user_content_fwd_handler, content_types=['text', 'photo', 'audio',
                                                                           'voice', 'contact', 'location',
