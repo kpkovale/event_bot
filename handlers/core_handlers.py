@@ -1,5 +1,5 @@
 from telebot import TeleBot
-from telebot.types import Message, ReplyKeyboardRemove
+from telebot.types import Message, ReplyKeyboardRemove, CallbackQuery
 from catalogues.message_texts import MessageTexts
 from catalogues.button_texts import ButtonNames
 from data_base.db_models import User, clear_users, get_user_list
@@ -9,6 +9,7 @@ from telebot.apihelper import ApiTelegramException
 import random
 from utils.bot_logger import logger
 from telebot.util import smart_split
+from telegram_bot_pagination import InlineKeyboardPaginator
 
 
 def command_start(message: Message, bot: TeleBot):
@@ -64,19 +65,39 @@ def clear_event_button_handler(message: Message, bot: TeleBot):
 
 
 def user_stats_button_handler(message: Message, bot: TeleBot):
-    users_list = get_user_list()
-    if users_list:
+    text_list, users_count = get_users_message_list()
+    if text_list:
         logger.info(f"Вывожу список пользователей в чат админу {message.from_user.full_name}")
-        logger.info(f"Количество пользователей: {len(users_list)}")
-        bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(len(users_list)))
-        text = ""
-        for user in users_list:
-            text += user.__str__() + "\n"
-        for text_part in smart_split(text):
-            bot.send_message(message.chat.id, text_part, reply_markup=admin_markup())
+        logger.info(f"Количество пользователей: {users_count}")
+        bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(users_count))
+        paginator = InlineKeyboardPaginator(page_count=len(text_list),
+                                            current_page=1)
+        print(paginator.markup)
+        bot.send_message(message.chat.id, text_list[0], reply_markup=paginator.markup)
     else:
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(0),
                          reply_markup=admin_markup())
+
+
+def user_paginator_callback_handler(call: CallbackQuery, bot: TeleBot):
+    data = int(call.data)
+    bot.answer_callback_query(call.id, text="Переключаю страницу")
+    text_list, _ = get_users_message_list()
+    paginator = InlineKeyboardPaginator(page_count=len(text_list),
+                                        current_page=data)
+    bot.edit_message_text(text_list[data-1], call.message.chat.id, call.message.id,
+                          reply_markup=paginator.markup)
+
+
+def get_users_message_list():
+    users_list = get_user_list()
+    if users_list:
+        text = ""
+        for user in users_list:
+            text += user.__str__() + "\n\n"
+        return smart_split(text, chars_per_string=740), len(users_list)
+    else:
+        return None, None
 
 
 def gen_test_users_command_handler(message: Message, bot: TeleBot):
@@ -148,3 +169,6 @@ def register_core_handlers(bot: TeleBot):
                                                                           'voice', 'contact', 'location',
                                                                           'video', 'document'],
                                  admin=False, pass_bot=True)
+    bot.register_callback_query_handler(user_paginator_callback_handler, func=lambda call: call.data.isdigit(),
+                                        pass_bot=True)
+

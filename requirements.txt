@@ -4,6 +4,7 @@ greenlet==2.0.1
 idna==3.4
 pyTelegramBotAPI==4.11.0
 python-dotenv==0.21.1
+python-telegram-bot-pagination==0.0.2
 requests==2.30.0
 SQLAlchemy==2.0.13
 typing_extensions==4.4.0
