@@ -8,7 +8,7 @@ from keyboards.admin_keyboard import admin_markup
 from telebot.apihelper import ApiTelegramException
 import random
 from utils.bot_logger import logger
-from telebot.util import user_link
+from telebot.util import smart_split
 
 
 def command_start(message: Message, bot: TeleBot):
@@ -72,7 +72,8 @@ def user_stats_button_handler(message: Message, bot: TeleBot):
         text = ""
         for user in users_list:
             text += user.__str__() + "\n"
-        bot.send_message(message.chat.id, text, reply_markup=admin_markup())
+        for text_part in smart_split(text):
+            bot.send_message(message.chat.id, text_part, reply_markup=admin_markup())
     else:
         bot.send_message(message.chat.id, MessageTexts.USERS_COUNT_MESSAGE.format(0),
                          reply_markup=admin_markup())
